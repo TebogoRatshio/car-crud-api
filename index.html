@@ -1,116 +1,204 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Car API</title>
-  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-  <script src="https://unpkg.com/alpinejs" defer></script>
-
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-    h1 {
-      font-size: 2rem;
-    }
-    button {
-      margin-right: 10px;
-      padding: 10px 20px;
-      font-size: 1rem;
-      cursor: pointer;
-    }
-    .radio-group {
-      margin-bottom: 20px;
-    }
-    .radio-group label {
-      margin-right: 10px;
-      cursor: pointer;
-    }
-    .content {
-      margin-top: 20px;
-    }
-    @media (max-width: 600px) {
-      button {
-        display: block;
-        width: 100%;
-        margin-bottom: 10px;
-      }
-      h1 {
-        font-size: 1.5rem;
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car CRUD API Application</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        .form-group button {
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+    </style>
 </head>
 <body>
-  <div x-data="carApp()" class="container">
-    <h1>Car API</h1>
-
-    <div class="radio-group">
-      <label>
-        <input type="radio" name="view" value="cars" x-model="view" /> Car List
-      </label>
-      <label>
-        <input type="radio" name="view" value="mostPopularModel" x-model="view" /> Most Popular Model
-      </label>
+    <div class="container">
+        <h1>Car CRUD API</h1>
+        
+        <div class="form-group">
+            <h2>Filter Cars</h2>
+            <label for="filter-color">Color:</label>
+            <input type="text" id="filter-color">
+            
+            <label for="filter-make">Make:</label>
+            <input type="text" id="filter-make">
+            
+            <label for="filter-model">Model:</label>
+            <input type="text" id="filter-model">
+            
+            <button onclick="filterCars()">Filter</button>
+        </div>
+        
+        <div class="form-group">
+            <h2>Add New Car</h2>
+            <label for="add-color">Color:</label>
+            <input type="text" id="add-color">
+            
+            <label for="add-make">Make:</label>
+            <input type="text" id="add-make">
+            
+            <label for="add-model">Model:</label>
+            <input type="text" id="add-model">
+            
+            <label for="add-reg-number">Registration Number:</label>
+            <input type="text" id="add-reg-number">
+            
+            <button onclick="addCar()">Add Car</button>
+        </div>
+        
+        <div class="form-group">
+            <h2>Update Car Information</h2>
+            <label for="update-reg-number">Registration Number:</label>
+            <input type="text" id="update-reg-number">
+            
+            <label for="update-color">New Color:</label>
+            <input type="text" id="update-color">
+            
+            <label for="update-make">New Make:</label>
+            <input type="text" id="update-make">
+            
+            <label for="update-model">New Model:</label>
+            <input type="text" id="update-model">
+            
+            <button onclick="updateCar()">Update Car</button>
+        </div>
+        
+        <h2>Car List</h2>
+        <table id="car-table">
+            <thead>
+                <tr>
+                    <th>Color</th>
+                    <th>Make</th>
+                    <th>Model</th>
+                    <th>Registration Number</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
     </div>
+    
+    <script>
+        const cars = [
+            { "color": "white", "make": "Volkswagen", "model": "Polo", "reg_number": "CL 61045" },
+            { "color": "red", "make": "Toyota", "model": "Tazz", "reg_number": "CY 16875" },
+            { "color": "orange", "make": "Nissan", "model": "Juke", "reg_number": "CK 32655" },
+            { "color": "orange", "make": "Ford", "model": "EcoSport", "reg_number": "CL 11318" },
+            { "color": "white", "make": "Nissan", "model": "Micra", "reg_number": "CJ 16103" },
+            { "color": "orange", "make": "Nissan", "model": "Juke", "reg_number": "CL 42789" },
+            { "color": "blue", "make": "Volkswagen", "model": "Jetta", "reg_number": "CA 46977" },
+            { "color": "white", "make": "Volkswagen", "model": "Polo", "reg_number": "CY 25661" },
+            { "color": "white", "make": "Nissan", "model": "Micra", "reg_number": "CY 35475" },
+            { "color": "white", "make": "Toyota", "model": "Corolla", "reg_number": "CY 54886" },
+            { "color": "white", "make": "Toyota", "model": "Hilux", "reg_number": "CJ 16455" },
+            { "color": "orange", "make": "Toyota", "model": "Corolla", "reg_number": "CK 57166" },
+            { "color": "orange", "make": "Ford", "model": "Fiesta", "reg_number": "CL 77790" },
+            { "color": "blue", "make": "Nissan", "model": "Juke", "reg_number": "CY 98904" },
+            { "color": "white", "make": "Ford", "model": "Ranger", "reg_number": "CF 75599" },
+            { "color": "red", "make": "Toyota", "model": "Corolla", "reg_number": "CA 5510" },
+            { "color": "blue", "make": "Ford", "model": "Focus", "reg_number": "CF 75586" },
+            { "color": "orange", "make": "Toyota", "model": "Tazz", "reg_number": "CA 46137" },
+            { "color": "orange", "make": "Ford", "model": "Ranger", "reg_number": "CK 22692" },
+            { "color": "red", "make": "Toyota", "model": "Corolla", "reg_number": "CF 33543" },
+            { "color": "red", "make": "Volkswagen", "model": "Touran", "reg_number": "CA 94890" },
+            { "color": "orange", "make": "Toyota", "model": "Tazz", "reg_number": "CY 82252" },
+            { "color": "blue", "make": "Toyota", "model": "Yaris", "reg_number": "CL 9538" },
+            { "color": "white", "make": "Nissan", "model": "Juke", "reg_number": "CF 62002" },
+            { "color": "orange", "make": "Ford", "model": "Fiesta", "reg_number": "CJ 67577" },
+            { "color": "blue", "make": "Ford", "model": "Ranger", "reg_number": "CA 77852" },
+            { "color": "orange", "make": "Toyota", "model": "Hilux", "reg_number": "CY 52435" },
+            { "color": "blue", "make": "Toyota", "model": "Corolla", "reg_number": "CL 76173" },
+            { "color": "red", "make": "Toyota", "model": "Tazz", "reg_number": "CL 38315" },
+            { "color": "orange", "make": "Toyota", "model": "Corolla", "reg_number": "CK 41166" }
+        ];
 
-    <button @click="fetchCars" x-show="view === 'cars'">Fetch Cars</button>
-    <button @click="fetchMostPopularModel" x-show="view === 'mostPopularModel'">Fetch Most Popular Model</button>
-
-    <div class="content" x-show="view === 'cars' && cars.length > 0">
-      <h2>Car List</h2>
-      <ul>
-        <template x-for="car in cars" :key="car.reg_number">
-          <li x-text="`${car.make} ${car.model} (${car.color})`"></li>
-        </template>
-      </ul>
-    </div>
-
-    <div class="content" x-show="view === 'mostPopularModel' && mostPopularModel">
-      <h2>Most Popular Model</h2>
-      <p x-text="`Model: ${mostPopularModel.model}, Count: ${mostPopularModel.count}`"></p>
-    </div>
-  </div>
-
-  <script>
-    function carApp() {
-      return {
-        cars: [],
-        mostPopularModel: null,
-        view: 'cars', 
-        fetchCars() {
-          axios.get('http://localhost:3000/api/cars') 
-            .then(response => {
-              this.cars = response.data;
-            })
-            .catch(error => {
-              console.error('Error fetching cars:', error);
-            });
-        },
-        fetchMostPopularModel() {
-          axios.get('http://localhost:3000/api/cars/mostPopularModel') 
-            .then(response => {
-              this.mostPopularModel = response.data;
-            })
-            .catch(error => {
-              console.error('Error fetching most popular model:', error);
+        function renderTable(cars) {
+            const tableBody = document.querySelector('#car-table tbody');
+            tableBody.innerHTML = '';
+            cars.forEach(car => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${car.color}</td>
+                    <td>${car.make}</td>
+                    <td>${car.model}</td>
+                    <td>${car.reg_number}</td>
+                `;
+                tableBody.appendChild(row);
             });
         }
-      }
-    }
 
-    document.addEventListener('alpine:init', () => {
-      Alpine.data('carApp', carApp);
-    });
-  </script>
+        function filterCars() {
+            const color = document.getElementById('filter-color').value.toLowerCase();
+            const make = document.getElementById('filter-make').value.toLowerCase();
+            const model = document.getElementById('filter-model').value.toLowerCase();
+            const filteredCars = cars.filter(car => {
+                return (color === '' || car.color.toLowerCase().includes(color)) &&
+                       (make === '' || car.make.toLowerCase().includes(make)) &&
+                       (model === '' || car.model.toLowerCase().includes(model));
+            });
+            renderTable(filteredCars);
+        }
+
+        function addCar() {
+            const color = document.getElementById('add-color').value;
+            const make = document.getElementById('add-make').value;
+            const model = document.getElementById('add-model').value;
+            const reg_number = document.getElementById('add-reg-number').value;
+            const newCar = { color, make, model, reg_number };
+            cars.push(newCar);
+            renderTable(cars);
+        }
+
+        function updateCar() {
+            const reg_number = document.getElementById('update-reg-number').value;
+            const newColor = document.getElementById('update-color').value;
+            const newMake = document.getElementById('update-make').value;
+            const newModel = document.getElementById('update-model').value;
+            const car = cars.find(car => car.reg_number === reg_number);
+            if (car) {
+                car.color = newColor || car.color;
+                car.make = newMake || car.make;
+                car.model = newModel || car.model;
+                renderTable(cars);
+            } else {
+                alert('Car with the given registration number not found.');
+            }
+        }
+
+        // Initial render
+        renderTable(cars);
+    </script>
 </body>
 </html>

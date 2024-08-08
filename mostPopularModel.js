@@ -1,204 +1,64 @@
-import express from 'express';
+document.addEventListener('DOMContentLoaded', () => {
+    const loadCarsButton = document.getElementById('loadCars');
+    const addCarForm = document.getElementById('addCarForm');
+    const carList = document.getElementById('carList');
+    const getMostPopularModelButton = document.getElementById('getMostPopularModel');
+    const mostPopularModelDisplay = document.getElementById('mostPopularModel');
 
-const app = express();
-
-let cars = [
-  {
-   "color": "white",
-    "make": "Volkswagen",
-    "model": "Polo",
-    "reg_number": "CL 61045"
-  },  {
-    "color": "red",
-    "make": "Toyota",
-    "model": "Tazz",
-    "reg_number": "CY 16875"
-  },  {
-    "color": "orange",
-    "make": "Nissan",
-    "model": "Juke",
-    "reg_number": "CK 32655"
-  },  {
-    "color": "orange",
-    "make": "Ford",
-    "model": "EcoSport",
-    "reg_number": "CL 11318"
-  },  {
-    "color": "white",
-    "make": "Nissan",
-    "model": "Micra",
-    "reg_number": "CJ 16103"
-  },  {
-    "color": "orange",
-    "make": "Nissan",
-    "model": "Juke",
-    "reg_number": "CL 42789"
-  },  {
-    "color": "blue",
-    "make": "Volkswagen",
-    "model": "Jetta",
-    "reg_number": "CA 46977"
-  },  {
-    "color": "white",
-    "make": "Volkswagen",
-    "model": "Polo",
-    "reg_number": "CY 25661"
-  },  {
-    "color": "white",
-    "make": "Nissan",
-    "model": "Micra",
-    "reg_number": "CY 35475"
-  },  {
-    "color": "white",
-    "make": "Toyota",
-    "model": "Corolla",
-    "reg_number": "CY 54886"
-  },  {
-    "color": "white",
-    "make": "Toyota",
-    "model": "Hilux",
-    "reg_number": "CJ 16455"
-  },  {
-    "color": "orange",
-    "make": "Toyota",
-    "model": "Corolla",
-    "reg_number": "CK 57166"
-  },  {
-    "color": "orange",
-    "make": "Ford",
-    "model": "Fiesta",
-    "reg_number": "CL 77790"
-  },  {
-    "color": "blue",
-    "make": "Nissan",
-    "model": "Juke",
-    "reg_number": "CY 98904"
-  },  {
-    "color": "white",
-    "make": "Ford",
-    "model": "Ranger",
-    "reg_number": "CF 75599"
-  },  {
-    "color": "red",
-    "make": "Toyota",
-    "model": "Corolla",
-    "reg_number": "CA 5510"
-  },  {
-    "color": "blue",
-    "make": "Ford",
-    "model": "Focus",
-    "reg_number": "CF 75586"
-  },  {
-    "color": "orange",
-    "make": "Toyota",
-    "model": "Tazz",
-    "reg_number": "CA 46137"
-  },  {
-    "color": "orange",
-    "make": "Ford",
-    "model": "Ranger",
-    "reg_number": "CK 22692"
-  },  {
-    "color": "red",
-    "make": "Toyota",
-    "model": "Corolla",
-    "reg_number": "CF 33543"
-  },  {
-    "color": "red",
-    "make": "Volkswagen",
-    "model": "Touran",
-    "reg_number": "CA 94890"
-  },  {
-    "color": "orange",
-    "make": "Toyota",
-    "model": "Tazz",
-    "reg_number": "CY 82252"
-  },  {
-    "color": "blue",
-    "make": "Toyota",
-    "model": "Yaris",
-    "reg_number": "CL 9538"
-  },  {
-    "color": "white",
-    "make": "Nissan",
-    "model": "Juke",
-    "reg_number": "CF 62002"
-  },  {
-    "color": "orange",
-    "make": "Ford",
-    "model": "Fiesta",
-    "reg_number": "CJ 67577"
-  },  {
-    "color": "blue",
-    "make": "Ford",
-    "model": "Ranger",
-    "reg_number": "CA 77852"
-  },  {
-    "color": "orange",
-    "make": "Toyota",
-    "model": "Hilux",
-    "reg_number": "CY 52435"
-  },  {
-    "color": "blue",
-    "make": "Toyota",
-    "model": "Corolla",
-    "reg_number": "CL 76173"
-  },  {
-    "color": "red",
-    "make": "Toyota",
-    "model": "Tazz",
-    "reg_number": "CL 38315"
-  },  {
-    "color": "orange",
-    "make": "Toyota",
-    "model": "Corolla",
-    "reg_number": "CK 41166"
-  }
-];
-
-app.use(express.urlencoded({ extended: false }));
-app.use(express.json());
-
-// Function to find the most popular model
-function findMostPopularModel(cars) {
-  const modelCount = cars.reduce((count, car) => {
-    count[car.model] = (count[car.model] || 0) + 1;
-    return count;
-  }, {});
-
-  let mostPopularModel = null;
-  let maxCount = 0;
-
-  for (const model in modelCount) {
-    if (modelCount[model] > maxCount) {
-      maxCount = modelCount[model];
-      mostPopularModel = model;
+    // Function to fetch and display the car list
+    function loadCars() {
+        fetch('/api/cars')
+            .then(response => response.json())
+            .then(cars => {
+                carList.innerHTML = '';
+                cars.forEach(car => {
+                    const li = document.createElement('li');
+                    li.textContent = `${car.color} ${car.make} ${car.model} (${car.reg_number})`;
+                    carList.appendChild(li);
+                });
+            })
+            .catch(error => console.error('Error fetching cars:', error));
     }
-  }
 
-  return mostPopularModel;
-}
+    // Function to add a new car
+    addCarForm.addEventListener('submit', (event) => {
+        event.preventDefault();
 
-app.get('/api/cars', function (req, res) {
-  res.json(cars); 
-});
+        const formData = new FormData(addCarForm);
+        const newCar = {
+            color: formData.get('color'),
+            make: formData.get('make'),
+            model: formData.get('model'),
+            reg_number: formData.get('reg_number')
+        };
 
-app.get('/api/cars/mostpopularmodel', function (req, res) {
-  const mostPopularModel = findMostPopularModel(cars);
-  res.json({ model: mostPopularModel });
-});
+        fetch('/api/cars', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(newCar)
+        })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                addCarForm.reset();
+                loadCars(); // Refresh the car list
+            })
+            .catch(error => console.error('Error adding car:', error));
+    });
 
-app.post('/api/cars', function (req, res) {
-  const newCar = req.body;
-  
-  if (!newCar.color || !newCar.make || !newCar.model || !newCar.reg_number) {
-    return res.status(400).json({ message: 'All fields are required' });
-  }
+    // Function to fetch and display the most popular model
+    function getMostPopularModel() {
+        fetch('/api/cars/mostpopularmodel')
+            .then(response => response.json())
+            .then(data => {
+                mostPopularModelDisplay.textContent = `Most Popular Model: ${data.model}`;
+            })
+            .catch(error => console.error('Error fetching most popular model:', error));
+    }
 
-  cars.push(newCar); 
-  res.status(201).json({ message: 'Car added successfully', car: newCar });
-});
-
-app.listen(3000, function () {
-  console.log('Example app listening on port 3000!');
+    // Event listeners
+    loadCarsButton.addEventListener('click', loadCars);
+    getMostPopularModelButton.addEventListener('click', getMostPopularModel);
 });
