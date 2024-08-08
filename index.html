@@ -4,8 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Car CRUD API Application</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://unpkg.com/alpinejs" defer></script>
     <style>
         body {
+            background-color: burlywood;
             font-family: Arial, sans-serif;
             margin: 20px;
         }
@@ -41,6 +44,10 @@
             padding: 8px;
             text-align: left;
         }
+        .btn-delete {
+            color: red;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -57,6 +64,9 @@
             
             <label for="filter-model">Model:</label>
             <input type="text" id="filter-model">
+            
+            <label for="filter-popular">Most Popular Model:</label>
+            <input type="checkbox" id="filter-popular">
             
             <button onclick="filterCars()">Filter</button>
         </div>
@@ -103,6 +113,7 @@
                     <th>Make</th>
                     <th>Model</th>
                     <th>Registration Number</th>
+                    <th>Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -144,16 +155,28 @@
             { "color": "orange", "make": "Toyota", "model": "Corolla", "reg_number": "CK 41166" }
         ];
 
-        function renderTable(cars) {
+        // Function to calculate the most popular model based on the count of occurrences
+        function getMostPopularModel() {
+            const modelCounts = {};
+            cars.forEach(car => {
+                modelCounts[car.model] = (modelCounts[car.model] || 0) + 1;
+            });
+
+            const mostPopularModel = Object.keys(modelCounts).reduce((a, b) => modelCounts[a] > modelCounts[b] ? a : b);
+            return mostPopularModel;
+        }
+
+        function renderTable(carsToRender) {
             const tableBody = document.querySelector('#car-table tbody');
             tableBody.innerHTML = '';
-            cars.forEach(car => {
+            carsToRender.forEach(car => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${car.color}</td>
                     <td>${car.make}</td>
                     <td>${car.model}</td>
                     <td>${car.reg_number}</td>
+                    <td><button class="btn-delete" onclick="deleteCar('${car.reg_number}')">Delete</button></td>
                 `;
                 tableBody.appendChild(row);
             });
@@ -163,34 +186,61 @@
             const color = document.getElementById('filter-color').value.toLowerCase();
             const make = document.getElementById('filter-make').value.toLowerCase();
             const model = document.getElementById('filter-model').value.toLowerCase();
+            const isPopular = document.getElementById('filter-popular').checked;
+
+            const mostPopularModel = getMostPopularModel();
+            
             const filteredCars = cars.filter(car => {
                 return (color === '' || car.color.toLowerCase().includes(color)) &&
                        (make === '' || car.make.toLowerCase().includes(make)) &&
-                       (model === '' || car.model.toLowerCase().includes(model));
+                       (model === '' || car.model.toLowerCase().includes(model)) &&
+                       (!isPopular || car.model === mostPopularModel);
             });
             renderTable(filteredCars);
         }
 
         function addCar() {
-            const color = document.getElementById('add-color').value;
-            const make = document.getElementById('add-make').value;
-            const model = document.getElementById('add-model').value;
-            const reg_number = document.getElementById('add-reg-number').value;
+            const color = document.getElementById('add-color').value.trim();
+            const make = document.getElementById('add-make').value.trim();
+            const model = document.getElementById('add-model').value.trim();
+            const reg_number = document.getElementById('add-reg-number').value.trim();
+
+            if (!color || !make || !model || !reg_number) {
+                alert('All fields are required.');
+                return;
+            }
+
             const newCar = { color, make, model, reg_number };
             cars.push(newCar);
             renderTable(cars);
         }
 
         function updateCar() {
-            const reg_number = document.getElementById('update-reg-number').value;
-            const newColor = document.getElementById('update-color').value;
-            const newMake = document.getElementById('update-make').value;
-            const newModel = document.getElementById('update-model').value;
+            const reg_number = document.getElementById('update-reg-number').value.trim();
+            const newColor = document.getElementById('update-color').value.trim();
+            const newMake = document.getElementById('update-make').value.trim();
+            const newModel = document.getElementById('update-model').value.trim();
+
+            if (!reg_number) {
+                alert('Registration number is required.');
+                return;
+            }
+
             const car = cars.find(car => car.reg_number === reg_number);
             if (car) {
                 car.color = newColor || car.color;
                 car.make = newMake || car.make;
                 car.model = newModel || car.model;
+                renderTable(cars);
+            } else {
+                alert('Car with the given registration number not found.');
+            }
+        }
+
+        function deleteCar(reg_number) {
+            const index = cars.findIndex(car => car.reg_number === reg_number);
+            if (index !== -1) {
+                cars.splice(index, 1);
                 renderTable(cars);
             } else {
                 alert('Car with the given registration number not found.');
