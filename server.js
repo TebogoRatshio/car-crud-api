@@ -40,6 +40,7 @@ const cars = [
 
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
+app.use(express.static('public'));
 
 function findMostPopularModel(cars) {
   const modelCount = cars.reduce((count, car) => {
